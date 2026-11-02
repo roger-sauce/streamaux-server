@@ -1,0 +1,78 @@
+# Laeuft direkt auf dem Raspberry Pi (roon-bridge), nicht auf der QNAP.
+# Build-Context ist ".." (apps/), da adapters/ und package.json dort liegen,
+# nicht im autoplay-pi/-Unterordner selbst (siehe Dockerfile-Kommentar).
+services:
+  autoplay-pi:
+    build:
+      context: ..
+      dockerfile: autoplay-pi/Dockerfile
+    container_name: autoplay-pi
+    restart: unless-stopped
+    shm_size: "1gb"   # Playwright/Chromium-Empfehlung - Docker-Default (64MB)
+                       # reicht fuer die Media-Pipeline oft nicht
+    ports:
+      - "8072:3001"
+    devices:
+      - "/dev/snd:/dev/snd"
+    volumes:
+      - ./debug:/app/debug
+      - ./data:/app/data
+    group_add:
+      - "29"   # GID der "audio"-Gruppe auf dem Pi-Host (siehe mk-autoplay-pi)
+    # Bildet "host.docker.internal" aus dem Container auf den Host ab. Unter
+    # Linux gibt es diesen Namen nicht von Haus aus, anders als unter macOS
+    # und Windows -- "host-gateway" ist der von Docker dafuer vorgesehene
+    # Platzhalter. Dadurch kommt die feste Heimnetz-IP aus Code und Konfig
+    # heraus: roon-trigger laeuft im Host-Netz desselben Rechners.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # AUTOPLAY_KEY - das gemeinsame Geheimnis mit der StreamAux-App. Steht
+    # bewusst in .env und nicht hier: diese Datei liegt im Git, .env nicht.
+    # Fehlt die Datei, startet "docker compose up" gar nicht erst; fehlt der
+    # Key darin, beendet sich der Container sofort wieder (siehe server.js).
+    # Beides ist lautes Scheitern statt eines still offenen Servers.
+    env_file:
+      - .env
+    environment:
+      # Die Abtastrate steht hier bewusst NICHT mehr.
+      #
+      # Bis 05.09.2026 stand 44100 fest in server.js, undokumentiert; danach
+      # kurz als Schalter ALSA_RATE hier. Beides war falsch gedacht. Die
+      # Audio-Entrypoint-Extension haelt die Aufnahmeseite der Loopback in
+      # einem festen Format offen (Dropdown in Roon: Settings -> Extensions),
+      # und snd-aloop bindet die Wiedergabeseite daran. Eine zweite Stelle,
+      # die dasselbe festlegt, kann nur noch abweichen -- und eine Abweichung
+      # ist hier keine Umrechnung, sondern Stille. Der Server liest das Format
+      # jetzt vom Geraet (siehe readLoopback in server.js).
+      - ALSA_DEVICE=hw:0,1
+      - ROON_TRIGGER_URL=http://host.docker.internal:4000
+      - ROON_TRIGGER_DELAY_MS=3000
+    # Verhindert Rechteausweitung ueber setuid-Dateien im Container. Von den
+    # drei Anwendungen auf roon-bridge ist das hier die exponierteste: sie
+    # rendert mit Playwright fremde Inhalte von NTS, Bandcamp und
+    # minnakikeru. Der Container laeuft ohnehin schon als "node" (siehe
+    # Dockerfile, USER node), die Option schliesst nur den Weg ueber eine
+    # setuid-Datei zurueck nach oben.
+    security_opt:
+      - no-new-privileges:true
+
+  # Reverse Proxy fuer HTTPS auf Port 7443 (analog discogs-roon/Crate auf
+  # 8443). host-Netzwerk, damit Caddy autoplay-pi unter dem veroeffentlichten
+  # Port 127.0.0.1:8072 erreicht und selbst direkt auf 7443 lauscht.
+  # Port 8072 bleibt zusaetzlich per http erreichbar.
+  caddy:
+    image: caddy:2-alpine
+    container_name: autoplay-pi-caddy
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - autoplay-pi
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/certs:/certs:ro
+      - caddy-data:/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  caddy-data:

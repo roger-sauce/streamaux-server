@@ -1,0 +1,29 @@
+# Laeuft direkt auf dem Raspberry Pi (roon-bridge), neben mk-autoplay-pi und
+# den Roon-Extensions. network_mode: host ist noetig, damit Roons
+# UDP-Discovery-Protokoll (Broadcast) den Core im LAN zuverlaessig findet -
+# aus einem regulaeren Docker-Bridge-Netzwerk heraus funktioniert das
+# erfahrungsgemaess oft nicht. Dadurch ist "ports:" hier nicht noetig, PORT
+# bestimmt direkt, auf welchem Host-Port gelauscht wird.
+services:
+  roon-trigger:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: roon-trigger
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - PORT=4000
+      - ROON_STATION_NAME=Audio Entrypoint (roon-bridge)
+    # Verhindert Rechteausweitung ueber setuid-Dateien im Container. Kostet
+    # nichts und schraenkt nichts ein, was Roon braucht -- der Container
+    # laeuft ohnehin schon als "node" (siehe Dockerfile, USER node).
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      # Roon-Pairing (config.json) persistent halten, damit die Extension
+      # nach einem Rebuild nicht erneut in Roon freigegeben werden muss.
+      # Das Verzeichnis muss dem Container-Benutzer node (UID 1000) gehoeren,
+      # sonst kann er nicht hineinschreiben:
+      #   sudo chown -R 1000:1000 roon-config
+      - ./roon-config:/data

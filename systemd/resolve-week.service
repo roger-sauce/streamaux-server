@@ -1,0 +1,40 @@
+[Unit]
+Description=Ask the stations about the broadcasts that are over
+Documentation=file:///home/roger/autoplay-orchestrator/systemd/resolve-week.sh
+
+# docker.service must be up, otherwise "docker compose" has nobody to talk to.
+Requires=docker.service
+After=docker.service
+
+# The run fetches the guide from the other Pi over the network before it starts.
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+
+# "docker compose" reads the .env from the working directory -- the same
+# reason konzert-guide.service names its directory explicitly.
+WorkingDirectory=/home/roger/autoplay-orchestrator/apps/autoplay-pi
+ExecStart=/home/roger/autoplay-orchestrator/systemd/resolve-week.sh
+
+# Where the guide lives, for the publishing step at the end of the script. The
+# leading "-" makes it optional: without the file the archive is still built,
+# it just stays on this Pi. The file is gitignored -- it names an address and
+# an account of this home network.
+EnvironmentFile=-/home/roger/autoplay-orchestrator/systemd/publish.env
+
+# A night is a day's broadcasts plus whatever is still being retried inside the
+# seven-day window -- of the order of a hundred entries, a quarter of an hour.
+# The two hours are for --weekly, which is the same unit run by hand and walks
+# around 390 entries with a browser started for several of them.
+TimeoutStartSec=7200
+
+User=roger
+Group=docker
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

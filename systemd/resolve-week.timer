@@ -1,0 +1,26 @@
+[Unit]
+Description=Nightly resolver run
+Documentation=file:///home/roger/autoplay-orchestrator/systemd/resolve-week.sh
+
+[Timer]
+# Six in the morning, every day. After the ARD Nachtkonzert, which runs past
+# five and would otherwise be the one broadcast a night's run never covered;
+# before anybody is listening, so a quarter of an hour of Chromium on this Pi
+# competes with nothing.
+#
+# A station that publishes later in the day is not lost by this: an entry is
+# asked again every night for seven days from the end of its broadcast. The
+# early hour buys the fast stations -- most of them -- a place in the app by
+# breakfast, and costs the slow ones one wasted question.
+OnCalendar=*-*-* 06:00
+AccuracySec=1min
+
+# If the Pi was off, run at the next opportunity. A night that is skipped
+# entirely is not a disaster any more -- the entries stay in the window and are
+# asked again -- but the sooner one lands, the sooner the app is right.
+Persistent=true
+
+Unit=resolve-week.service
+
+[Install]
+WantedBy=timers.target

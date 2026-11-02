@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Measurements, logs and debug output -- large, and they hold addresses from
+# whatever network this ran on
+test/
+apps/autoplay-pi/debug/
+apps/autoplay-pi/data/
+/data/resolved/
+
+# TLS: the private key must NEVER be committed
+apps/autoplay-pi/caddy/certs/
+*.pem
+*.key
+
+# The shared secret with the app
+apps/autoplay-pi/.env
+
+# Where a guide lives and how to reach it, read by systemd/resolve-week.sh
+systemd/publish.env
+
+# Roon pairing token
+apps/roon-trigger/roon-config/
+
+# macOS / editor
+.DS_Store

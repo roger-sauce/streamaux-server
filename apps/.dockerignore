@@ -1,0 +1,7 @@
+# Build-Context ist apps/ (siehe autoplay-pi/docker-compose.yml). Die
+# Caddy-Zertifikate duerfen NICHT ins Image - sie kommen zur Laufzeit per
+# Volume-Mount. Sonst landet der private Schluessel in jedem Image-Layer.
+autoplay-pi/caddy/certs
+node_modules
+**/node_modules
+.DS_Store

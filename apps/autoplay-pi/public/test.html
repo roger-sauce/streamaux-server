@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autoplay (Pi) - regression test</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="style.css">
+<style>
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  td, th { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .status-pending { color: var(--fg-dim); }
+  .status-running { color: var(--accent); }
+  .status-pass { color: #7fbf7f; font-weight: 600; }
+  .status-fail { color: #e07a7a; font-weight: 600; }
+  .url-cell { max-width: 260px; overflow-wrap: anywhere; font-size: 11px; color: var(--fg-dim); }
+  #current-audio-row { margin-top: 12px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <h1>Regression test - every adapter</h1>
+  </header>
+  <section class="view">
+    <p class="empty-hint">Plays a little of every test address and checks whether currentTime really moves forward.</p>
+    <button id="btn-start" class="primary-btn" type="button">Start the test</button>
+    <div id="current-audio-row">
+      <div id="now-label">-</div>
+      <audio id="test-audio" controls style="width:100%; margin-top:6px;"></audio>
+    </div>
+    <table id="results">
+      <thead><tr><th>Adapter</th><th>URL</th><th>Status</th><th>Details</th></tr></thead>
+      <tbody id="results-body"></tbody>
+    </table>
+  </section>
+  <footer class="app-footer">Designed with ❤️ by Rogzilla, coded by Claude</footer>
+</div>
+<script src="test.js"></script>
+</body>
+</html>

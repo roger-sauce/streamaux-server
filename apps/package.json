@@ -1,0 +1,23 @@
+{
+  "name": "autoplay-pi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Extrahiert echte Audio-Stream-URLs aus verschiedenen Quellen (NTS, spaeter mk/Wire/Bandcamp/SoundCloud) fuer die Roon-Autoplay-Pipeline.",
+  "scripts": {
+    "extract": "node autoplay-pi/extract.js",
+    "start": "node autoplay-pi/server.js",
+    "test": "node --test checks/*.test.js"
+  },
+  "dependencies": {
+    "playwright": "^1.47.0",
+    "node-html-parser": "^9.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "eslint": "^10.7.0",
+    "@types/node": "^20.19.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.2": true
+  }
+}

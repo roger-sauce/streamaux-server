@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Autoplay (Pi)</title>
+<meta name="robots" content="noindex, nofollow">
+
+<!-- PWA / iOS home screen -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14120E">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Autoplay (Pi)">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <h1>Autoplay (Pi)</h1>
+    <details id="stations-dropdown" class="stations-dropdown">
+      <summary>Supported stations</summary>
+      <ul id="stations-list-platforms" class="stations-list"></ul>
+      <div class="stations-divider"></div>
+      <ul id="stations-list-radio" class="stations-list"></ul>
+    </details>
+  </header>
+
+  <section class="view">
+    <p class="empty-hint">Paste an episode or album address (NTS archive, minnakikeru.com):</p>
+    <form id="url-form" class="url-form">
+      <input id="url-input" type="url" inputmode="url" placeholder="https://…"
+             autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <button type="submit" id="btn-extract" class="primary-btn">Play here</button>
+    </form>
+    <p id="status" class="copy-status"></p>
+    <div id="spinner-row" class="spinner-row hidden"><span class="spinner">⚙</span></div>
+
+    <div id="roon-only" class="roon-only hidden">
+      <div class="np-source">In Roon</div>
+      <div class="track-title" id="roon-only-title"></div>
+      <div class="np-current-track" id="roon-only-pos"></div>
+      <button id="btn-roon-only-stop" class="secondary-btn" type="button">Stop Roon</button>
+    </div>
+
+    <div id="resume-row" class="resume-row hidden">
+      <select id="roon-zone-resume" class="zone-select-prominent" title="Roon zone"></select>
+      <button id="btn-roon-resume" class="secondary-btn" type="button"></button>
+    </div>
+
+    <div id="now-playing" class="now-playing hidden">
+      <img id="cover" class="cover hidden" alt="">
+      <div class="track-title" id="np-title"></div>
+      <div class="np-source" id="np-source"></div>
+
+      <div class="transport-row hidden" id="transport-row">
+        <button id="btn-prev" class="ctrl-btn" type="button" title="Previous track">⏮</button>
+        <span id="np-current-track" class="np-current-track"></span>
+        <button id="btn-next" class="ctrl-btn" type="button" title="Next track">⏭</button>
+      </div>
+
+      <div class="btn-row zone-row">
+        <span class="zone-spacer" aria-hidden="true"></span>
+        <select id="roon-zone" class="zone-select-prominent" title="Roon zone"></select>
+      </div>
+      <div class="btn-row">
+        <button id="btn-device-stop" class="secondary-btn" type="button">Stop here</button>
+        <button id="btn-roon" class="secondary-btn" type="button">Play in Roon</button>
+      </div>
+      <p id="roon-status" class="copy-status"></p>
+      <div class="progress-row">
+        <span id="time-cur">0:00</span>
+        <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        <span id="time-dur">0:00</span>
+      </div>
+      <ol id="tracklist" class="tracklist"></ol>
+    </div>
+  </section>
+  <footer class="app-footer">Designed with ❤️ by Rogzilla, coded by Claude</footer>
+</div>
+
+<audio id="audio" preload="none"></audio>
+
+<script src="app.js"></script>
+</body>
+</html>

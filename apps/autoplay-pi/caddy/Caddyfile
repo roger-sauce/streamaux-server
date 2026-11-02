@@ -1,0 +1,13 @@
+# TLS-Terminierung fuer autoplay-pi im Heimnetz. Zertifikat kommt von mkcert
+# (lokale CA, dieselbe wie bei Crate/discogs-roon), deshalb auto_https aus -
+# Caddy soll nichts bei Let's Encrypt anfragen, .local-Namen sind dort
+# ohnehin nicht zertifizierbar.
+{
+	auto_https off
+	admin off
+}
+
+:7443 {
+	tls /certs/autoplay.pem /certs/autoplay-key.pem
+	reverse_proxy 127.0.0.1:8072
+}
