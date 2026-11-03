@@ -4,7 +4,43 @@
 // cleanText do not have to be copied into each new source (the
 // konzert-guide stations to come, for instance).
 
-const USER_AGENT = "Mozilla/5.0 (compatible; AutoplayPi/1.0)";
+/* WHAT THIS CALL SAYS IT IS. Changed on 03.11.2026, and the old value was
+ * costing us Bandcamp entirely.
+ *
+ * It used to read "Mozilla/5.0 (compatible; AutoplayPi/1.0)" -- half a browser
+ * disguise, and that half is what got it refused. Measured against one Daily
+ * article, three agents seconds apart from the same machine:
+ *
+ *   (none, so "node")                          278987 bytes, article present
+ *   Mozilla/5.0 (compatible; AutoplayPi/1.0)      3036 bytes, article gone
+ *   streamaux/1.0 (+github...)                 278987 bytes, article present
+ *
+ * So automation as such is not what Bandcamp refuses -- a bare "node" sails
+ * through. "Mozilla/5.0 (compatible; ...)" is the shape thousands of scrapers
+ * wear and sits on the block lists accordingly. The answer came back as a 200
+ * with a stunted body, which is why nothing ever looked like an error: the
+ * adapter reported a missing selector, and the selector was there all along,
+ * on a page we were never sent.
+ *
+ * IT WAS ALL THREE BANDCAMP HOSTS, not just the editorial one. Measured the
+ * same day over the project's own test list, old agent against new:
+ *
+ *   daily.bandcamp.com            3036 -> 371245
+ *   bandcamp.com                  3036 -> 219292
+ *   <artist>.bandcamp.com         3036 -> 379580
+ *   the other 26 stations         unchanged, byte for byte
+ *
+ * The album adapter and Bandcamp Radio were as broken as the article one.
+ * Nobody noticed because freshStreamUrl falls back quietly by design.
+ *
+ * And this is what resolve-week.js has claimed all along: identify yourself
+ * honestly, do not pretend to be Chrome. The old value did neither properly.
+ * The `+` address is the convention search engines use -- a place to look up
+ * who is calling. checks/user-agent.test.js holds the two properties that
+ * matter; the measurement itself is one GET per station with each agent, a
+ * few hundred milliseconds apart, compared on status and body size.
+ */
+const USER_AGENT = "streamaux/1.0 (+https://github.com/roger-sauce/streamaux-server)";
 
 async function fetchHtml(url, opts = {}) {
   const resp = await fetch(url, {
