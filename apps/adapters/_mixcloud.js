@@ -1,7 +1,25 @@
 "use strict";
 const { chromium } = require("playwright");
 
-const PLAYLIST_RE = /aod\.mixcloud\.stream\/secure\/hls\/.*\/index\.m3u8/i;
+/* THE ADDRESS THE PLAYER FETCHES, and the host in it is not a constant.
+ *
+ * It read `aod.mixcloud.stream` until 09.11.2026 and Mixcloud has since moved
+ * the same files to `aod.mixcloud.com`. Measured that day on a Wire show: the
+ * click worked, the aria-label turned to "Click to pause", three manifests
+ * came in with 200 -- and none of them matched, so the adapter sat out its
+ * timeout and reported "the play click failed or the page has changed". It
+ * had done neither. The only thing that had changed was a hostname.
+ *
+ * Both are accepted now rather than one being swapped for the other: the old
+ * host may still serve older shows, and a rule that takes both cannot be
+ * wrong about which era a recording comes from.
+ *
+ * What stays fixed is the shape -- /secure/hls/ and an index.m3u8 at the end.
+ * That is what distinguishes the master playlist from the per-track manifest
+ * (streamindex-a1.m3u8) that follows it, and taking the wrong one of those
+ * hands ffmpeg a single rendition instead of the real entry point.
+ */
+const PLAYLIST_RE = /aod\.mixcloud\.(?:stream|com)\/secure\/hls\/.*\/index\.m3u8/i;
 
 const CONSENT_SELECTORS = [
   'button:has-text("Ok")',
@@ -50,7 +68,7 @@ async function extractMixcloudStream(mixcloudUrl, { timeoutMs = 20000 } = {}) {
   const found = new Promise((resolve) => {
     page.on("response", (response) => {
       const u = response.url();
-      if (/mixcloud\.stream|\.m3u8/i.test(u)) {
+      if (/mixcloud\.(?:stream|com)\/secure\/hls|\.m3u8/i.test(u)) {
         console.log(`[mixcloud][net] ${response.status()} ${u}`);
       }
       if (!streamUrl && PLAYLIST_RE.test(u)) {
@@ -61,7 +79,7 @@ async function extractMixcloudStream(mixcloudUrl, { timeoutMs = 20000 } = {}) {
   });
   page.on("requestfailed", (request) => {
     const u = request.url();
-    if (/mixcloud\.stream|\.m3u8/i.test(u)) {
+    if (/mixcloud\.(?:stream|com)\/secure\/hls|\.m3u8/i.test(u)) {
       console.log(`[mixcloud][net-failed] ${request.failure()?.errorText} ${u}`);
     }
   });
@@ -116,4 +134,7 @@ async function extractMixcloudStream(mixcloudUrl, { timeoutMs = 20000 } = {}) {
   }
 }
 
-module.exports = { extractMixcloudStream };
+// PLAYLIST_RE is exported for checks/mixcloud-playlist.test.js: it is the
+// rule that broke, it is pure, and a hostname is exactly the kind of thing
+// that moves again.
+module.exports = { extractMixcloudStream, PLAYLIST_RE };
